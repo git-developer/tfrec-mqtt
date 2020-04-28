@@ -1,0 +1,30 @@
+include:
+  remote: "https://github.com/git-developer/docker-support/raw/develop/gitlab-ci/docker-template.yml"
+
+variables:
+  IMAGE_TITLE: 'tfrec'
+  IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm/v7,linux/arm/v6'
+
+stages:
+  - setup
+  - prepare
+  - analyze
+  - publish
+
+Collect Additional Tags:
+  extends: .docker_support:.with_bare_image
+  stage: analyze
+  artifacts:
+    paths:
+    - tags
+  script:
+  - set -euo pipefail
+  - run() { docker run --rm "${IMAGE_NAME}:${BUILD_CACHE}" sh -c "${@}"; }
+
+  - COMMIT_DATE="$(run 'cut -d " " -f 1 </opt/metadata/commit_date')"
+  - COMMIT_SHORT_SHA="$(run 'echo /opt/metadata/commit_short_sha')"
+  - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
+
+  - mkdir -p tags
+  - echo >tags/commit_info "${IMAGE_NAME}:${COMMIT_DATE}.${COMMIT_SHORT_SHA}"
+  - echo >tags/build_id "${IMAGE_NAME}:b${BUILD_ID}"

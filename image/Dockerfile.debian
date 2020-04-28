@@ -1,0 +1,32 @@
+# debian:stable-slim (buster / 10.3) suffers from a bug
+# ( see https://github.com/baycom/tfrec/issues/17 ),
+# debian:bullseye-slim contains a fix
+ARG BUILD_BASE_IMAGE=debian:bullseye-slim
+ARG RUNTIME_BASE_IMAGE=debian:stable-slim
+
+FROM "${BUILD_BASE_IMAGE}" AS builder
+ARG TARGETARCH
+ARG TARGETVARIANT
+RUN apt-get update && apt-get install -y git make g++ pkg-config librtlsdr-dev libusb-1.0-0-dev
+RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
+WORKDIR /opt/tfrec
+RUN mkdir -p metadata && \
+    echo >./metadata/commit_sha $(git rev-parse HEAD) && \
+    echo >./metadata/commit_short_sha $(git rev-parse --short HEAD) && \
+    echo >./metadata/commit_ref_name $(git rev-parse --abbrev-ref HEAD) && \
+    echo >./metadata/commit_date $(git show -s --format=%ci HEAD)
+RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
+    case "${arch}" in \
+       386|amd64)  makefile='Makefile'        ;; \
+       arm/v7*)    makefile='Makefile.arm'    ;; \
+       arm/v6*)    makefile='Makefile.raspi2' ;; \
+       *) >&2 echo "Unsupported architecture: ${arch}" && exit 1 ;; \
+    esac && \
+    make -f "${makefile}"
+
+FROM "${RUNTIME_BASE_IMAGE}" AS runtime
+RUN apt-get update && apt-get install -y librtlsdr0 mosquitto && apt-get clean
+COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
+COPY --from=builder /opt/tfrec /usr/local/bin/
+COPY mqtt-publish /usr/local/bin
+CMD [ "tfrec" ]

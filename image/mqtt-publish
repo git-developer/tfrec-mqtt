@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Publish tfrec datagram as MQTT message
+#
+# Arguments: tfrec datagram, e.g.
+#   id   temp  hum seq lowbat rssi flags time
+#   5158 +23.8 59  10  0      79   0     1496588364
+#
+set -eu
+
+MQTT_TOPIC="${MQTT_TOPIC:-tfrec}"
+MQTT_TOPIC_APPEND_ID="${MQTT_TOPIC_APPEND_ID:-true}"
+MQTT_TOPIC_APPEND_FORMAT="${MQTT_TOPIC_APPEND_FORMAT:-true}"
+
+FORMAT_RAW="${FORMAT_RAW:-false}"
+FORMAT_RAW_SEPARATOR="${FORMAT_RAW_SEPARATOR:- }"
+FORMAT_JSON="${FORMAT_JSON:-true}"
+FORMAT_JSON_LOWBAT_AS_BOOLEAN="${FORMAT_JSON_LOWBAT_AS_BOOLEAN:-false}"
+
+cancel() {
+  # local set is required because in global has no effect, at least in busybox ash
+  set -eu
+  echo >&2 "Error: ${@}"
+  return 1
+}
+
+publish() {
+  format="${1}"
+  id="${2}"
+  message="${3}"
+
+  topic="${MQTT_TOPIC}"
+  [ ! "${MQTT_TOPIC_APPEND_ID}"     = 'true' ] || topic="${topic}/${id}"
+  [ ! "${MQTT_TOPIC_APPEND_FORMAT}" = 'true' ] || topic="${topic}/${format}"
+  printf "%s " '-t' "${topic}" '-m' "'${message}'" "${MQTT_OPTIONS-}" | xargs mosquitto_pub
+}
+
+build_raw_message() {
+  printf "%s${FORMAT_RAW_SEPARATOR}" "${@}"
+}
+
+build_json_message() {
+  [ ! "${#}" -lt "8" ] || cancel "too few arguments: '${@}'"
+  echo "${@}" | while read sensor_id temperature humidity seq lowbat rssi flags timestamp; do
+    # remove the leading '+' to get a valid JSON number
+    temperature="${temperature#+}"
+    if [ "${FORMAT_JSON_LOWBAT_AS_BOOLEAN}" = 'true' ]; then
+      if [ "${lowbat}" -eq 1 ]; then lowbat='true'; else lowbat='false'; fi
+    fi
+    printf '{ "sensor_id":"%s", "temperature":%.9g, "humidity":%.9g, "seq":%i, "lowbat":%s, "rssi":%i, "flags":%i, "timestamp":%i }' \
+            "${sensor_id}"    "${temperature}"    "${humidity}"    "${seq}"  "${lowbat}"  "${rssi}"  "${flags}"  "${timestamp}"
+  done
+}
+
+main() {
+  [ -n "${1-}" ] || cancel "No arguments"
+  if [ "${FORMAT_RAW}"  = 'true' ]; then
+    publish 'raw' "${1}" "$(build_raw_message "${@}")"
+  fi
+  if [ "${FORMAT_JSON}" = 'true' ]; then
+    publish 'json' "${1}" "$(build_json_message "${@}")"
+  fi
+}
+
+main "${@}"

@@ -1,0 +1,34 @@
+ARG BUILD_BASE_IMAGE=alpine
+ARG RUNTIME_BASE_IMAGE=alpine
+ARG ALPINE_REPO_URL=https://alpine.global.ssl.fastly.net/alpine/edge/testing
+
+FROM "${BUILD_BASE_IMAGE}" AS builder
+ARG ALPINE_REPO_URL
+ARG TARGETARCH
+ARG TARGETVARIANT
+RUN apk add --update-cache git make g++ pkgconf
+RUN apk add --no-cache --repository "${ALPINE_REPO_URL}" librtlsdr-dev
+RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
+WORKDIR /opt/tfrec
+RUN mkdir -p metadata && \
+    echo >./metadata/commit_sha $(git rev-parse HEAD) && \
+    echo >./metadata/commit_short_sha $(git rev-parse --short HEAD) && \
+    echo >./metadata/commit_ref_name $(git rev-parse --abbrev-ref HEAD) && \
+    echo >./metadata/commit_date $(git show -s --format=%ci HEAD)
+RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
+    case "${arch}" in \
+       386|amd64)  makefile='Makefile'        ;; \
+       arm/v7*)    makefile='Makefile.arm'    ;; \
+       arm/v6*)    makefile='Makefile.raspi2' ;; \
+       *) >&2 echo "Unsupported architecture: ${arch}" && exit 1 ;; \
+    esac && \
+    make -f "${makefile}"
+
+FROM "${RUNTIME_BASE_IMAGE}" AS runtime
+ARG ALPINE_REPO_URL
+RUN apk add libstdc++ mosquitto
+RUN apk add --no-cache --repository "${ALPINE_REPO_URL}" librtlsdr
+COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
+COPY --from=builder /opt/tfrec /usr/local/bin/
+COPY mqtt-publish /usr/local/bin
+CMD [ "tfrec" ]
