@@ -21,8 +21,8 @@ Collect Additional Tags:
   - set -euo pipefail
   - run() { docker run --rm "${IMAGE_NAME}:${BUILD_CACHE}" sh -c "${@}"; }
 
-  - COMMIT_DATE="$(run 'cut -d " " -f 1 </opt/metadata/commit_date')"
-  - COMMIT_SHORT_SHA="$(run 'echo /opt/metadata/commit_short_sha')"
+  - COMMIT_DATE="$(run 'cut -d " " -f 1 </opt/tfrec-metadata/commit_date')"
+  - COMMIT_SHORT_SHA="$(run 'echo /opt/tfrec-metadata/commit_short_sha')"
   - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
 
   - mkdir -p tags
