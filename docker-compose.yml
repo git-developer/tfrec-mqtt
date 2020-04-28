@@ -1,0 +1,18 @@
+---
+version: "2.2"
+services:
+  tfrec-mqtt:
+    image: "ckware/tfrec-mqtt"
+    container_name: tfrec-mqtt
+    restart: unless-stopped
+    init: "true"
+#    environment:
+#      MQTT_TOPIC: "tfrec"
+#      MQTT_TOPIC_APPEND_ID: "true"
+#      MQTT_TOPIC_APPEND_FORMAT: "true"
+#      MQTT_OPTIONS: ""
+#      FORMAT_RAW: "false"
+#      FORMAT_RAW_SEPARATOR: " "
+#      FORMAT_JSON: "true"
+#      FORMAT_JSON_LOWBAT_AS_BOOLEAN: "false"
+    command: [ "tfrec", "-T", "1", "-g", "13", "-t", "1000", "-q", "-e", "mqtt-publish" ]
