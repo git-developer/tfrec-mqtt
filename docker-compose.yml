@@ -15,4 +15,6 @@ services:
 #      FORMAT_RAW_SEPARATOR: " "
 #      FORMAT_JSON: "true"
 #      FORMAT_JSON_LOWBAT_AS_BOOLEAN: "false"
+    devices:
+    - "/dev/bus/usb:/dev/bus/usb"
     command: [ "tfrec", "-T", "1", "-g", "13", "-t", "1000", "-q", "-e", "mqtt-publish" ]
