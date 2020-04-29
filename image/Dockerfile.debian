@@ -25,7 +25,7 @@ RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
     make -f "${makefile}"
 
 FROM "${RUNTIME_BASE_IMAGE}" AS runtime
-RUN apt-get update && apt-get install -y librtlsdr0 mosquitto && apt-get clean
+RUN apt-get update && apt-get install -y librtlsdr0 mosquitto-clients && apt-get clean
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
 COPY --from=builder /opt/tfrec/tfrec /usr/local/bin/
 COPY mqtt-publish /usr/local/bin/

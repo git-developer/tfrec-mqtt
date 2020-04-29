@@ -24,7 +24,7 @@ RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
 
 FROM "${RUNTIME_BASE_IMAGE}" AS runtime
 ARG ALPINE_REPO_URL
-RUN apk add --update-cache libstdc++ mosquitto librtlsdr
+RUN apk add --update-cache libstdc++ mosquitto-clients librtlsdr
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
 COPY --from=builder /opt/tfrec/tfrec /usr/local/bin/
 COPY mqtt-publish /usr/local/bin/
