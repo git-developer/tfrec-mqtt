@@ -1,13 +1,11 @@
 ARG BUILD_BASE_IMAGE=alpine
 ARG RUNTIME_BASE_IMAGE=alpine
-ARG ALPINE_REPO_URL=https://alpine.global.ssl.fastly.net/alpine/edge/testing
 
 FROM "${BUILD_BASE_IMAGE}" AS builder
 ARG ALPINE_REPO_URL
 ARG TARGETARCH
 ARG TARGETVARIANT
-RUN apk add --update-cache git make g++ pkgconf
-RUN apk add --no-cache --repository "${ALPINE_REPO_URL}" librtlsdr-dev
+RUN apk add --update-cache git make g++ pkgconf librtlsdr-dev
 RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
 WORKDIR /opt/tfrec
 RUN mkdir -p metadata && \
@@ -26,8 +24,7 @@ RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
 
 FROM "${RUNTIME_BASE_IMAGE}" AS runtime
 ARG ALPINE_REPO_URL
-RUN apk add libstdc++ mosquitto
-RUN apk add --no-cache --repository "${ALPINE_REPO_URL}" librtlsdr
+RUN apk add --update-cache libstdc++ mosquitto librtlsdr
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
 COPY --from=builder /opt/tfrec/tfrec /usr/local/bin/
 COPY mqtt-publish /usr/local/bin/
