@@ -29,6 +29,6 @@ ARG ALPINE_REPO_URL
 RUN apk add libstdc++ mosquitto
 RUN apk add --no-cache --repository "${ALPINE_REPO_URL}" librtlsdr
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
-COPY --from=builder /opt/tfrec /usr/local/bin/
-COPY mqtt-publish /usr/local/bin
+COPY --from=builder /opt/tfrec/tfrec /usr/local/bin/
+COPY mqtt-publish /usr/local/bin/
 CMD [ "tfrec" ]

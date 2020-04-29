@@ -27,6 +27,6 @@ RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
 FROM "${RUNTIME_BASE_IMAGE}" AS runtime
 RUN apt-get update && apt-get install -y librtlsdr0 mosquitto && apt-get clean
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
-COPY --from=builder /opt/tfrec /usr/local/bin/
-COPY mqtt-publish /usr/local/bin
+COPY --from=builder /opt/tfrec/tfrec /usr/local/bin/
+COPY mqtt-publish /usr/local/bin/
 CMD [ "tfrec" ]
