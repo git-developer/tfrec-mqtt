@@ -1,5 +1,5 @@
 include:
-  remote: "https://github.com/git-developer/docker-support/raw/develop/gitlab-ci/docker-template.yml"
+  remote: "https://github.com/git-developer/docker-support/raw/v2.1.0/gitlab-ci/docker-template.yml"
 
 variables:
   IMAGE_TITLE: 'tfrec'
