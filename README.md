@@ -2,7 +2,7 @@
 Docker image to receive wireless sensor data and publish them via MQTT.
 
 ## Usage
-Start a container to publish sensor data via MQTT. 
+Start a container to publish sensor data via MQTT.
 ### Docker Compose
 1. Create a run configuration `docker-compose.yml`, e.g.
     ```yaml
@@ -33,9 +33,9 @@ Start a container to publish sensor data via MQTT.
 ```bash
 $ mosquitto_sub -v -h broker -t tfrec/#
 
-tfrec/761e/json { "sensor_id":"761e", "temperature":9.1, "humidity":78, "seq":0, "lowbat":0, "rssi":82, "flags":0, "timestamp":1588303401 }
+tfrec/1a2b/json { "sensor_id":"1a2b", "temperature":9.1, "humidity":78, "seq":0, "lowbat":0, "rssi":82, "flags":0, "timestamp":1588303401 }
 
-tfrec/6081/json { "sensor_id":"6081", "temperature":15.6, "humidity":69, "seq":0, "lowbat":0, "rssi":79, "flags":0, "timestamp":1588303402 }
+tfrec/c3d4/json { "sensor_id":"c3d4", "temperature":15.6, "humidity":69, "seq":0, "lowbat":0, "rssi":79, "flags":0, "timestamp":1588303402 }
 ```
 
 ## Requirements
@@ -67,9 +67,22 @@ The configuration is based on environment variables.
 |`FORMAT_RAW`|Publish sensor data in raw format?|`true` / `false`|`false`|`false`
 |`FORMAT_RAW_SEPARATOR`|Field separator for raw format|String|Whitespace (`\u0020`)|`,`
 
+## FHEM-Integration
+Example configuration to use the sensor values within [FHEM](https://fhem.de/):
+```
+define mosquitto MQTT localhost:1883
+
+define mqtt_klima_wohnzimmer MQTT_DEVICE
+attr   mqtt_klima_wohnzimmer subscribeReading_json tfrec/1a2b/json
+attr   mqtt_klima_wohnzimmer stateFormat T: temperature H: humidity
+
+define expandjson_mqtt_klima expandJSON mqtt_klima_.+.json:.\{.*\}
+```
+
 ## References
-`tfrec-mqtt` is an integration of
-* [tfrec](https://github.com/baycom/tfrec) - A SDR tool for receiving wireless sensor data
-* [Mosquitto](https://mosquitto.org/) - An Open Source MQTT Broker
-* The [OCI image](https://github.com/opencontainers/image-spec) format 
-* [Docker](https://www.docker.com)
+* This project is an integration of
+  * [tfrec](https://github.com/baycom/tfrec) - A SDR tool for receiving wireless sensor data
+  * [Mosquitto](https://mosquitto.org/) - An Open Source MQTT Broker
+  * The [OCI image](https://github.com/opencontainers/image-spec) format 
+  * [Docker](https://www.docker.com)
+* History and details (in German): [Temperatur/Feuchte-Sender mit tfrec und MQTT](https://github.com/git-developer/fhem-examples/wiki/Temperatur-Feuchte-Sender-mit-tfrec-und-MQTT)
