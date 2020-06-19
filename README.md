@@ -20,17 +20,17 @@ Start a container to publish sensor data via MQTT.
         restart: unless-stopped
     ```
 2. Start a container:
-    ```bash
+    ```sh
     $ docker-compose up -d
     ```
 
 ### Docker
-  ```bash
+  ```sh
   $ docker run --device /dev/bus/usb -e "MQTT_OPTIONS=-h broker" --init -d ckware/tfrec-mqtt tfrec -q -e mqtt-publish
   ```
 
 ### Result
-```bash
+```sh
 $ mosquitto_sub -v -h broker -t tfrec/#
 
 tfrec/1a2b/json { "sensor_id":"1a2b", "temperature":9.1, "humidity":78, "seq":0, "lowbat":0, "rssi":82, "flags":0, "timestamp":1588303401 }
@@ -49,7 +49,7 @@ tfrec/c3d4/json { "sensor_id":"c3d4", "temperature":15.6, "humidity":69, "seq":0
 
 The Docker Compose [documentation](https://docs.docker.com/compose/install/)
 contains a comprehensive guide explaining several install options. On recent debian-based systems, Docker Compose may be installed by calling
-  ```shell
+  ```sh
   $ sudo apt install docker-compose
   ```
 
@@ -68,15 +68,26 @@ The configuration is based on environment variables.
 |`FORMAT_RAW_SEPARATOR`|Field separator for raw format|String|Whitespace (`\u0020`)|`,`
 
 ## FHEM-Integration
-Example configuration to use the sensor values within [FHEM](https://fhem.de/):
+This section contains example configurations to use the sensor values within [FHEM](https://fhem.de/).
+
+### Using a `MQTT2_DEVICE`
+```
+define mosquitto MQTT2_CLIENT localhost:1883
+
+define mqtt_air_kitchen MQTT2_DEVICE
+attr   mqtt_air_kitchen readingList tfrec/1a2b/json:.* { json2nameValue($EVENT) }
+attr   mqtt_air_kitchen stateFormat T: temperature H: humidity
+```
+
+### Using a `MQTT_DEVICE`
 ```
 define mosquitto MQTT localhost:1883
 
-define mqtt_klima_wohnzimmer MQTT_DEVICE
-attr   mqtt_klima_wohnzimmer subscribeReading_json tfrec/1a2b/json
-attr   mqtt_klima_wohnzimmer stateFormat T: temperature H: humidity
+define mqtt_air_kitchen MQTT_DEVICE
+attr   mqtt_air_kitchen subscribeReading_json tfrec/1a2b/json
+attr   mqtt_air_kitchen stateFormat T: temperature H: humidity
 
-define expandjson_mqtt_klima expandJSON mqtt_klima_.+.json:.\{.*\}
+define expandjson_mqtt_air expandJSON mqtt_air_.+.json:.\{.*\}
 ```
 
 ## References
