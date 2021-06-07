@@ -5,7 +5,7 @@ services:
     image: "ckware/tfrec-mqtt"
     container_name: tfrec-mqtt
     restart: unless-stopped
-    init: "true"
+    init: true
 #    environment:
 #      MQTT_TOPIC: "tfrec"
 #      MQTT_TOPIC_APPEND_ID: "true"
