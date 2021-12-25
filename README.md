@@ -6,18 +6,18 @@ Start a container to publish sensor data via MQTT.
 ### Docker Compose
 1. Create a run configuration `docker-compose.yml`, e.g.
     ```yaml
-    version: 2.2
+    ---
     services:
       tfrec-mqtt:
         image: ckware/tfrec-mqtt
         container_name: tfrec-mqtt
+        restart: unless-stopped
+        init: true
         devices:
         - "/dev/bus/usb:/dev/bus/usb"
         environment:
-        - MQTT_OPTIONS: "-h broker"
-        command: [ "tfrec", "-q", "-e",  "mqtt-publish" ]
-        init: "true"
-        restart: unless-stopped
+          MQTT_OPTIONS: "-h broker"
+        command: [ "tfrec", "-q", "-e", "mqtt-publish" ]
     ```
 2. Start a container:
     ```sh

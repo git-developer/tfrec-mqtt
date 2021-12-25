@@ -1,7 +1,4 @@
-# debian:stable-slim (buster / 10.3) suffers from a bug
-# ( see https://github.com/baycom/tfrec/issues/17 ),
-# debian:bullseye-slim contains a fix
-ARG BUILD_BASE_IMAGE=debian:bullseye-slim
+ARG BUILD_BASE_IMAGE=debian:stable-slim
 ARG RUNTIME_BASE_IMAGE=debian:stable-slim
 
 FROM "${BUILD_BASE_IMAGE}" AS builder
@@ -17,9 +14,11 @@ RUN mkdir -p metadata && \
     echo >./metadata/commit_date $(git show -s --format=%ci HEAD)
 RUN arch="${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" && \
     case "${arch}" in \
-       386|amd64)  makefile='Makefile'        ;; \
-       arm/v7*)    makefile='Makefile.arm'    ;; \
-       arm/v6*)    makefile='Makefile.raspi2' ;; \
+       386|amd64) makefile='Makefile'        ;; \
+       arm/v7*)   makefile='Makefile.arm'    ;; \
+       arm/v6*)   makefile='Makefile.raspi2' ;; \
+       arm64*)    [ -f Makefile.arm64 ] || sed 's/ -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard//' Makefile.arm >Makefile.arm64; \
+                  makefile='Makefile.arm64'  ;; \
        *) >&2 echo "Unsupported architecture: ${arch}" && exit 1 ;; \
     esac && \
     make -f "${makefile}"

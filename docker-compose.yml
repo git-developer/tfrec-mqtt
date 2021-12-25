@@ -1,8 +1,7 @@
 ---
-version: "2.2"
 services:
   tfrec-mqtt:
-    image: "ckware/tfrec-mqtt"
+    image: ckware/tfrec-mqtt
     container_name: tfrec-mqtt
     restart: unless-stopped
     init: true
