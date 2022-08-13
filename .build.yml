@@ -1,0 +1,30 @@
+include:
+  remote: "https://github.com/git-developer/docker-support/raw/v3.2.1/gitlab-ci/docker-template.yml"
+
+variables:
+  IMAGE_TITLE: 'tfrec'
+  IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7,linux/arm/v6'
+  UPDATE_CHECK_URLS: 'https://github.com/baycom/tfrec.git'
+
+read_application_tags:
+  extends: .docker_support:.with_bare_image
+  stage: post_build
+  artifacts:
+    paths:
+    - tags
+    - labels
+  script:
+  - set -euo pipefail
+  - run() { docker run --rm "${IMAGE_NAME}:${BUILD_CACHE}" sh -c "${@}"; }
+
+  - COMMIT_DATE="$(run '[ ! -r /opt/tfrec-metadata/commit_date ] || cut -d " " -f 1 </opt/tfrec-metadata/commit_date')"
+  - COMMIT_SHORT_SHA="$(run '[ ! -r /opt/tfrec-metadata/commit_short_sha ] || cat /opt/tfrec-metadata/commit_short_sha')"
+  - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
+  - if run 'cat /etc/os-release | grep -qF "Alpine Linux v3.12"'; then PREFIX="legacy-"; fi
+
+  - mkdir -p tags
+  - echo >tags/build_id "${IMAGE_NAME}:b${BUILD_ID}"
+  - if [ "${COMMIT_DATE}" ]; then echo >tags/commit_info "${IMAGE_NAME}:${PREFIX-}${COMMIT_DATE}.${COMMIT_SHORT_SHA}"; fi
+
+  - mkdir -p labels
+  - echo >labels/org.opencontainers.image.version "org.opencontainers.image.version=${PREFIX-}${APP_VERSION}"

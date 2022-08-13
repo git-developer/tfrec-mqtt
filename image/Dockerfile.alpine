@@ -1,10 +1,6 @@
-# Stick with Alpine 3.12 to allow Raspbian Buster on the host; for details see
-# - https://docs.linuxserver.io/faq#libseccomp and
-# - https://wiki.alpinelinux.org/wiki/Release_Notes_for_Alpine_3.13.0#musl_1.2
-ARG BUILD_BASE_IMAGE=alpine:3.12
-ARG RUNTIME_BASE_IMAGE=alpine:3.12
+ARG BASE_IMAGE=alpine
 
-FROM "${BUILD_BASE_IMAGE}" AS builder
+FROM "${BASE_IMAGE}" AS builder
 ARG ALPINE_REPO_URL
 RUN apk add git make g++ pkgconf librtlsdr-dev
 RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
@@ -16,7 +12,7 @@ RUN mkdir -p metadata && \
     echo >./metadata/commit_date $(git show -s --format=%ci HEAD)
 RUN make
 
-FROM "${RUNTIME_BASE_IMAGE}" AS runtime
+FROM "${BASE_IMAGE}" AS runtime
 ARG ALPINE_REPO_URL
 RUN apk add --no-cache libstdc++ mosquitto-clients librtlsdr
 COPY --from=builder /opt/tfrec/metadata/ /opt/tfrec-metadata/
