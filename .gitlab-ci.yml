@@ -21,7 +21,11 @@ run_matrix_build:
       pipeline_variables: true
   parallel:
     matrix:
-      - BASE_IMAGE:      [ "debian:stable-slim", "debian:oldstable-slim", "debian:oldoldstable-slim" ]
+      - BASE_IMAGE:      [ "debian:stable-slim", "debian:oldstable-slim" ]
         BUILD_ARGS:      "BASE_IMAGE"
         BUILD_CONTEXT:   "image"
         IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7,linux/arm/v6'
+      - BASE_IMAGE:      [ "debian:oldoldstable-slim" ]
+        BUILD_ARGS:      "BASE_IMAGE"
+        BUILD_CONTEXT:   "image"
+        IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7'
