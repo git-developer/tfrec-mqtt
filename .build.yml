@@ -3,6 +3,7 @@ include:
 
 variables:
   IMAGE_TITLE: 'tfrec'
+  IMAGE_VERSION: dev
   IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7,linux/arm/v6'
   UPDATE_CHECK_URLS: 'https://github.com/baycom/tfrec.git'
 
@@ -20,13 +21,13 @@ read_application_tags:
   - COMMIT_DATE="$(run '[ ! -r /opt/tfrec-metadata/commit_date ] || cut -d " " -f 1 </opt/tfrec-metadata/commit_date')"
   - COMMIT_SHORT_SHA="$(run '[ ! -r /opt/tfrec-metadata/commit_short_sha ] || cat /opt/tfrec-metadata/commit_short_sha')"
   - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
-  - if run 'cat /etc/os-release | grep -qF "Alpine Linux v3.12"'; then PREFIX="legacy-"; fi
+  - PREFIX="$(run 'cat /etc/os-release | sed -nE 's:^PRETTY_NAME="Debian GNU/Linux .+ \((.+)\)":\1:p')"
 
   - mkdir -p tags
   - echo >tags/build_id "${IMAGE_NAME}:b${BUILD_ID}"
   - |
     if [ "${COMMIT_DATE}" ]; then
-      APP_VERSION="${PREFIX-}${COMMIT_DATE}.${COMMIT_SHORT_SHA}"
+      APP_VERSION="${PREFIX}${COMMIT_DATE}.${COMMIT_SHORT_SHA}"
       echo >tags/commit_info "${IMAGE_NAME}:${APP_VERSION}"
       mkdir -p labels
       echo >labels/org.opencontainers.image.version "org.opencontainers.image.version=${APP_VERSION}"
