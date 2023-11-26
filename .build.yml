@@ -21,7 +21,7 @@ read_application_tags:
   - COMMIT_DATE="$(run '[ ! -r /opt/tfrec-metadata/commit_date ] || cut -d " " -f 1 </opt/tfrec-metadata/commit_date')"
   - COMMIT_SHORT_SHA="$(run '[ ! -r /opt/tfrec-metadata/commit_short_sha ] || cat /opt/tfrec-metadata/commit_short_sha')"
   - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
-  - PREFIX="$(run 'cat /etc/os-release | sed -nE 's:^PRETTY_NAME="Debian GNU/Linux .+ \((.+)\)":\1:p')"
+  - PREFIX="$(run 'cat /etc/os-release | sed -nE "s:^PRETTY_NAME=.Debian GNU/Linux .+ \((.+)\)[^)]*:\1:p"')"
 
   - mkdir -p tags
   - echo >tags/build_id "${IMAGE_NAME}:b${BUILD_ID}"
