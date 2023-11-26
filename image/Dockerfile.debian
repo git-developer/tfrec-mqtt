@@ -2,10 +2,6 @@ ARG BASE_IMAGE=debian:stable-slim
 
 FROM "${BASE_IMAGE}" AS builder
 RUN apt-get update && apt-get install -y git make g++ pkg-config librtlsdr-dev libusb-1.0-0-dev
-# libc6-dev-armel-cross is required for arm/v6
-RUN case "${TARGETARCH:-$(arch)}" in \
-      arm*) apt-get install -y libc6-dev-armel-cross ;; \
-    esac
 RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
 WORKDIR /opt/tfrec
 RUN mkdir -p metadata && \
