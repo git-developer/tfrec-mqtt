@@ -1,5 +1,5 @@
 include:
-  remote: "https://github.com/git-developer/docker-support/raw/v3.2.1/gitlab-ci/docker-support.yml"
+  remote: "https://github.com/git-developer/docker-support/raw/v3.4.1/gitlab-ci/docker-support.yml"
 
 variables:
   UPDATE_CHECK_URLS: 'https://github.com/baycom/tfrec.git'
