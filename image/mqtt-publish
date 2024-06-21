@@ -17,6 +17,10 @@ FORMAT_RAW_SEPARATOR="${FORMAT_RAW_SEPARATOR:- }"
 FORMAT_JSON="${FORMAT_JSON:-true}"
 FORMAT_JSON_LOWBAT_AS_BOOLEAN="${FORMAT_JSON_LOWBAT_AS_BOOLEAN:-false}"
 
+CLIENT_MOSQUITTO="${CLIENT_MOSQUITTO:-true}"
+# LOG_FILE (optional)
+LOG_FORMAT="${LOG_FORMAT:-%s %s\n}"
+
 cancel() {
   # local set is required because in global has no effect, at least in busybox ash
   set -eu
@@ -32,7 +36,12 @@ publish() {
   topic="${MQTT_TOPIC}"
   [ ! "${MQTT_TOPIC_APPEND_ID}"     = 'true' ] || topic="${topic}/${id}"
   [ ! "${MQTT_TOPIC_APPEND_FORMAT}" = 'true' ] || topic="${topic}/${format}"
-  printf "%s " '-t' "${topic}" '-m' "'${message}'" "${MQTT_OPTIONS-}" | xargs mosquitto_pub
+  if [ "${CLIENT_MOSQUITTO}" = 'true' ]; then
+    printf "%s " '-t' "${topic}" '-m' "'${message}'" "${MQTT_OPTIONS-}" | xargs mosquitto_pub
+  fi
+  if [ "${LOG_FILE-}" ]; then
+    printf -- "${LOG_FORMAT}" "${topic}" "${message}" >>"${LOG_FILE}"
+  fi
 }
 
 build_raw_message() {

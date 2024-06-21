@@ -66,6 +66,9 @@ The configuration is based on environment variables.
 |`FORMAT_JSON_LOWBAT_AS_BOOLEAN`|Convert native `lowbat` value (`0` or `1`)  to JSON `boolean` type?|`true` / `false`|`false`|`false`
 |`FORMAT_RAW`|Publish sensor data in raw format?|`true` / `false`|`false`|`false`
 |`FORMAT_RAW_SEPARATOR`|Field separator for raw format|String|Whitespace (`\u0020`)|`,`
+|`CLIENT_MOSQUITTO`|Use Mosquitto as MQTT client?|`true` / `false`|`true`|`false`
+|`LOG_FILE`|If set, topic and message are appended to a log file|File path|not set|`/var/log/tfrec-mqtt.log`
+|`LOG_FORMAT`|Format to write topic and message to log file|`printf`-compatible syntax for 2 arguments|`%s %s\n`|`{"topic":"%s","message":%s}\n`
 
 ## FHEM-Integration
 This section contains example configurations to use the sensor values within [FHEM](https://fhem.de/).
