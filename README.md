@@ -4,7 +4,7 @@ Docker image to receive wireless sensor data and publish them via MQTT.
 ## Usage
 Start a container to publish sensor data via MQTT.
 ### Docker Compose
-1. Create a run configuration `docker-compose.yml`, e.g.
+1. Create a run configuration `compose.yml`, e.g.
     ```yaml
     ---
     services:
@@ -21,7 +21,7 @@ Start a container to publish sensor data via MQTT.
     ```
 2. Start a container:
     ```sh
-    $ docker-compose up -d
+    $ docker compose up -d
     ```
 
 ### Docker
@@ -50,7 +50,7 @@ tfrec/c3d4/json { "sensor_id":"c3d4", "temperature":15.6, "humidity":69, "seq":0
 The Docker Compose [documentation](https://docs.docker.com/compose/install/)
 contains a comprehensive guide explaining several install options. On recent debian-based systems, Docker Compose may be installed by calling
   ```sh
-  $ sudo apt install docker-compose
+  $ sudo apt-get install docker-compose-plugin
   ```
 
 ## Configuration
