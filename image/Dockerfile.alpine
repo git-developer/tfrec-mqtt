@@ -5,6 +5,7 @@ ARG ALPINE_REPO_URL
 RUN apk add git make g++ pkgconf librtlsdr-dev
 RUN git clone --depth 1 --single-branch https://github.com/baycom/tfrec /opt/tfrec
 WORKDIR /opt/tfrec
+RUN sed -i '/#include <string>/a #include <cstdint>' decoder.h
 RUN mkdir -p metadata && \
     echo >./metadata/commit_sha $(git rev-parse HEAD) && \
     echo >./metadata/commit_short_sha $(git rev-parse --short HEAD) && \

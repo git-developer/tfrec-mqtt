@@ -1,27 +1,32 @@
 include:
-  remote: "https://github.com/git-developer/docker-support/raw/v3.4.1/gitlab-ci/docker-support.yml"
+  remote: "https://github.com/git-developer/docker-support/raw/main/gitlab-ci/docker-template.yml"
 
 variables:
+  IMAGE_TITLE: 'tfrec'
+  IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7,linux/arm/v6'
   UPDATE_CHECK_URLS: 'https://github.com/baycom/tfrec.git'
 
-stages:
-- post_checkout
+read_application_tags:
+  extends: .docker_support:.with_bare_image
+  stage: post_build
+  artifacts:
+    paths:
+    - tags
+    - labels
+  script:
+  - set -euo pipefail
+  - run() { docker run --rm "${IMAGE_NAME}:${BUILD_CACHE}" sh -c "${@}"; }
 
-trigger_on_update:
-  extends: .docker_support:.trigger_on_update
-  stage: post_checkout
-  dependencies: []
+  - COMMIT_DATE="$(run '[ ! -r /opt/tfrec-metadata/commit_date ] || cut -d " " -f 1 </opt/tfrec-metadata/commit_date')"
+  - COMMIT_SHORT_SHA="$(run '[ ! -r /opt/tfrec-metadata/commit_short_sha ] || cat /opt/tfrec-metadata/commit_short_sha')"
+  - BUILD_ID="$(date -u +%Y%m%d_%H%M%S)-${IMAGE_REVISION:-${CI_COMMIT_SHORT_SHA}}-$(od -An -N5 -tu4 </dev/urandom | tr -d ' ' | head -c8)"
 
-run_matrix_build:
-  extends: .docker_support:.build_job
-  stage: post_checkout
-  trigger:
-    include: .build.yml
-    forward:
-      pipeline_variables: true
-  parallel:
-    matrix:
-      - BASE_IMAGE:      [ "alpine", "alpine:3.12" ]
-        BUILD_ARGS:      "BASE_IMAGE"
-        BUILD_CONTEXT:   "image"
-        IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64/v8,linux/arm/v7,linux/arm/v6'
+  - mkdir -p tags
+  - echo >tags/build_id "${IMAGE_NAME}:b${BUILD_ID}"
+  - |
+    if [ "${COMMIT_DATE}" ]; then
+      APP_VERSION="${COMMIT_DATE}.${COMMIT_SHORT_SHA}"
+      echo >tags/commit_info "${IMAGE_NAME}:${APP_VERSION}"
+      mkdir -p labels
+      echo >labels/org.opencontainers.image.version "org.opencontainers.image.version=${APP_VERSION}"
+    fi
