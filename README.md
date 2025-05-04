@@ -1,6 +1,51 @@
 # tfrec-mqtt
 Docker image to receive wireless sensor data and publish them via MQTT.
 
+## Maintenance Notice
+
+This project is not maintained anymore. It is no longer required since
+[merbanan/rtl_433](https://github.com/merbanan/rtl_433)
+added support for MQTT and [Klimalogg sensors](https://github.com/merbanan/rtl_433/pull/1319).
+Users of tfrec-mqtt are encouraged to migrate to rtl_433.
+
+This configuraton covers the basics for a migration:
+
+```yaml
+---
+services:
+  rtl_433:
+    image: hertzg/rtl_433
+    container_name: rtl_433
+    restart: unless-stopped
+    init: true
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    command: [
+      "-R", "150",
+      "-f", "868.325M",
+      "-s", "1.536M",
+      "-M", "level",
+      "-F", "mqtt://broker,events=rtl_433[/id]"
+    ]
+```
+
+Additional options might be required to align the SDR setup,
+e.g. gain (`-g`) or demodulator options like `-Y minlevel=-25`.
+Furthermore, rtl_433 allows to reduce the CPU load by lowering the sample rate (`-s`)
+or adding `-Y squelch`. See the rtl_433 documentation for a complete reference.
+
+MQTT messages have different structure but contain the same (and additional) information:
+
+_tfrec-mqtt_
+```json
+tfrec/1a2b/json { "sensor_id":"1a2b", "temperature":9.1, "humidity":78, "seq":0, "lowbat":0, "rssi":82, "flags":0, "timestamp":1588303401 }
+```
+
+_rtl_433_
+```json
+rtl_433/6699 {"time":"2020-05-01 03:23:21","model":"Klimalogg-Pro","id":6699,"battery_ok":1,"temperature_C":9.1,"humidity":78,"sequence_nr":0,"mic":"CRC","mod":"ASK","freq":868.28416,"rssi":-9.76374,"snr":27.60925,"noise":-37.373}
+```
+
 ## Usage
 Start a container to publish sensor data via MQTT.
 ### Docker Compose
